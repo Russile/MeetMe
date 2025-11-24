@@ -157,7 +157,7 @@ function App() {
           <div className="p-8 lg:col-span-1 border-r border-gray-200/50 flex flex-col h-full overflow-y-auto">
             <div className="mb-8 text-center">
               <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-                Meeting Point
+                Meet Me
               </h1>
               <p className="text-gray-500 mt-2 text-sm">Find the perfect halfway spot.</p>
             </div>

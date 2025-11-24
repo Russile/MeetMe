@@ -1,4 +1,4 @@
-# Meeting Point 📍
+# Meet Me 📍
 
 A beautiful, modern web application that finds the perfect halfway meeting point between two locations and recommends nearby places to visit.
 
@@ -42,8 +42,8 @@ A beautiful, modern web application that finds the perfect halfway meeting point
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/meeting-point.git
-   cd meeting-point
+   git clone https://github.com/YOUR_USERNAME/meet-me.git
+   cd meet-me
    ```
 
 2. **Install dependencies**
@@ -165,7 +165,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
 
-Project Link: [https://github.com/YOUR_USERNAME/meeting-point](https://github.com/YOUR_USERNAME/meeting-point)
+Project Link: [https://github.com/YOUR_USERNAME/meet-me](https://github.com/YOUR_USERNAME/meet-me)
 
 ---
 
