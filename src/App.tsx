@@ -3,10 +3,10 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import { AddressInput } from './components/AddressInput';
 import { Map } from './components/Map';
 import { PlaceDetailsPopup } from './components/PlaceDetailsPopup';
-import { ShareButton } from './components/ShareButton';
 import { useMidpoint } from './hooks/useMidpoint';
 import { usePlaces } from './hooks/usePlaces';
-import { MapPin, Clock, Navigation, Search, Star, Locate } from 'lucide-react';
+import { PlaceCard } from './components/PlaceCard';
+import { MapPin, Clock, Navigation, Search, Locate } from 'lucide-react';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
@@ -58,7 +58,7 @@ function App() {
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   const { calculateMidpoint, result: midpointResult, loading: midpointLoading, error: midpointError } = useMidpoint();
-  const { searchPlaces, places, loading: placesLoading, error: placesError } = usePlaces();
+  const { searchPlaces, places, loading: placesLoading, error: placesError, getPlaceDistance } = usePlaces();
 
   const handleCalculate = () => {
     if (addressA && addressB) {
@@ -68,17 +68,7 @@ function App() {
 
   useEffect(() => {
     if (midpointResult?.midpoint && addressA?.geometry?.location && addressB?.geometry?.location) {
-      // Convert to LatLngLiteral if they are LatLng objects
-      const originA = {
-        lat: typeof addressA.geometry.location.lat === 'function' ? addressA.geometry.location.lat() : (addressA.geometry.location as any).lat,
-        lng: typeof addressA.geometry.location.lng === 'function' ? addressA.geometry.location.lng() : (addressA.geometry.location as any).lng
-      };
-      const originB = {
-        lat: typeof addressB.geometry.location.lat === 'function' ? addressB.geometry.location.lat() : (addressB.geometry.location as any).lat,
-        lng: typeof addressB.geometry.location.lng === 'function' ? addressB.geometry.location.lng() : (addressB.geometry.location as any).lng
-      };
-
-      searchPlaces(midpointResult.midpoint, originA, originB, category, radius);
+      searchPlaces(midpointResult.midpoint, category, radius);
     }
   }, [midpointResult, addressA, addressB, category, radius, searchPlaces]);
 
@@ -301,78 +291,33 @@ function App() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {places.map((place) => (
-                    <div
+                    <PlaceCard
                       key={place.place_id}
-                      className="group border border-gray-100 rounded-xl p-4 hover:bg-indigo-50 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md cursor-pointer"
-                      onClick={() => setSelectedPlaceId(place.place_id || null)}
-                    >
-                      <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 truncate">{place.name}</h3>
-                      <p className="text-gray-500 text-xs mt-1 truncate">{place.vicinity}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center space-x-2">
-                          {place.rating && (
-                            <div className="flex items-center bg-yellow-100 px-2 py-0.5 rounded-full">
-                              <Star className="w-3 h-3 text-yellow-600 fill-current" />
-                              <span className="text-yellow-700 text-xs font-bold ml-1">{place.rating}</span>
-                            </div>
-                          )}
-                          {place.user_ratings_total && (
-                            <span className="text-gray-400 text-xs">({place.user_ratings_total} reviews)</span>
-                          )}
-                        </div>
-                        <div className="flex flex-col space-y-2 w-28">
-                          <ShareButton place={place} />
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.vicinity || place.formatted_address || place.name || '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Navigation className="w-3 h-3 mr-1" />
-                            Directions
-                          </a>
-                        </div>
-                      </div>
-
-                      {/* Trip Info Section */}
-                      <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-xs">
-                        <div className="flex flex-col space-y-1">
-                          <span className="text-gray-400 font-medium">From You</span>
-                          <div className="flex items-center text-gray-600">
-                            <Clock className="w-3 h-3 mr-1 text-indigo-400" />
-                            <span>{(place as any).durationToA || '--'}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <Navigation className="w-3 h-3 mr-1 text-indigo-400" />
-                            <span>{(place as any).distanceToA || '--'}</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col space-y-1">
-                          <span className="text-gray-400 font-medium">From Friend</span>
-                          <div className="flex items-center text-gray-600">
-                            <Clock className="w-3 h-3 mr-1 text-purple-400" />
-                            <span>{(place as any).durationToB || '--'}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <Navigation className="w-3 h-3 mr-1 text-purple-400" />
-                            <span>{(place as any).distanceToB || '--'}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      place={place}
+                      originA={{
+                        lat: typeof addressA!.geometry!.location!.lat === 'function' ? addressA!.geometry!.location!.lat() : (addressA!.geometry!.location as any).lat,
+                        lng: typeof addressA!.geometry!.location!.lng === 'function' ? addressA!.geometry!.location!.lng() : (addressA!.geometry!.location as any).lng
+                      }}
+                      originB={{
+                        lat: typeof addressB!.geometry!.location!.lat === 'function' ? addressB!.geometry!.location!.lat() : (addressB!.geometry!.location as any).lat,
+                        lng: typeof addressB!.geometry!.location!.lng === 'function' ? addressB!.geometry!.location!.lng() : (addressB!.geometry!.location as any).lng
+                      }}
+                      getPlaceDistance={getPlaceDistance}
+                      onSelect={() => setSelectedPlaceId(place.place_id || null)}
+                    />
                   ))}
                 </div>
               </div>
             )}
           </div>
         </div>
+
+        <PlaceDetailsPopup
+          placeId={selectedPlaceId}
+          isOpen={!!selectedPlaceId}
+          onClose={() => setSelectedPlaceId(null)}
+        />
       </div>
-      <PlaceDetailsPopup
-        placeId={selectedPlaceId}
-        isOpen={!!selectedPlaceId}
-        onClose={() => setSelectedPlaceId(null)}
-      />
     </APIProvider>
   );
 }
