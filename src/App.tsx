@@ -64,10 +64,20 @@ function App() {
   };
 
   useEffect(() => {
-    if (midpointResult?.midpoint) {
-      searchPlaces(midpointResult.midpoint, category, radius);
+    if (midpointResult?.midpoint && addressA?.geometry?.location && addressB?.geometry?.location) {
+      // Convert to LatLngLiteral if they are LatLng objects
+      const originA = {
+        lat: typeof addressA.geometry.location.lat === 'function' ? addressA.geometry.location.lat() : (addressA.geometry.location as any).lat,
+        lng: typeof addressA.geometry.location.lng === 'function' ? addressA.geometry.location.lng() : (addressA.geometry.location as any).lng
+      };
+      const originB = {
+        lat: typeof addressB.geometry.location.lat === 'function' ? addressB.geometry.location.lat() : (addressB.geometry.location as any).lat,
+        lng: typeof addressB.geometry.location.lng === 'function' ? addressB.geometry.location.lng() : (addressB.geometry.location as any).lng
+      };
+
+      searchPlaces(midpointResult.midpoint, originA, originB, category, radius);
     }
-  }, [midpointResult, category, radius, searchPlaces]);
+  }, [midpointResult, addressA, addressB, category, radius, searchPlaces]);
 
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -313,6 +323,32 @@ function App() {
                           <Navigation className="w-3 h-3 mr-1" />
                           Directions
                         </a>
+                      </div>
+
+                      {/* Trip Info Section */}
+                      <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-gray-400 font-medium">From You</span>
+                          <div className="flex items-center text-gray-600">
+                            <Clock className="w-3 h-3 mr-1 text-indigo-400" />
+                            <span>{(place as any).durationToA || '--'}</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Navigation className="w-3 h-3 mr-1 text-indigo-400" />
+                            <span>{(place as any).distanceToA || '--'}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-gray-400 font-medium">From Friend</span>
+                          <div className="flex items-center text-gray-600">
+                            <Clock className="w-3 h-3 mr-1 text-purple-400" />
+                            <span>{(place as any).durationToB || '--'}</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Navigation className="w-3 h-3 mr-1 text-purple-400" />
+                            <span>{(place as any).distanceToB || '--'}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
