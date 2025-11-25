@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import { AddressInput } from './components/AddressInput';
 import { Map } from './components/Map';
+import { PlaceDetailsPopup } from './components/PlaceDetailsPopup';
+import { ShareButton } from './components/ShareButton';
 import { useMidpoint } from './hooks/useMidpoint';
 import { usePlaces } from './hooks/usePlaces';
 import { MapPin, Clock, Navigation, Search, Star, Locate } from 'lucide-react';
@@ -53,6 +55,7 @@ function App() {
   const [mode, setMode] = useState<'time' | 'distance'>('time');
   const [category, setCategory] = useState('restaurant');
   const [radius, setRadius] = useState(8047); // 5 miles default (in meters)
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   const { calculateMidpoint, result: midpointResult, loading: midpointLoading, error: midpointError } = useMidpoint();
   const { searchPlaces, places, loading: placesLoading, error: placesError } = usePlaces();
@@ -298,7 +301,11 @@ function App() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {places.map((place) => (
-                    <div key={place.place_id} className="group border border-gray-100 rounded-xl p-4 hover:bg-indigo-50 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md">
+                    <div
+                      key={place.place_id}
+                      className="group border border-gray-100 rounded-xl p-4 hover:bg-indigo-50 hover:border-indigo-100 transition-all shadow-sm hover:shadow-md cursor-pointer"
+                      onClick={() => setSelectedPlaceId(place.place_id || null)}
+                    >
                       <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 truncate">{place.name}</h3>
                       <p className="text-gray-500 text-xs mt-1 truncate">{place.vicinity}</p>
                       <div className="flex items-center justify-between mt-2">
@@ -313,16 +320,19 @@ function App() {
                             <span className="text-gray-400 text-xs">({place.user_ratings_total} reviews)</span>
                           )}
                         </div>
-                        <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.vicinity || place.formatted_address || place.name || '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Navigation className="w-3 h-3 mr-1" />
-                          Directions
-                        </a>
+                        <div className="flex flex-col space-y-2 w-28">
+                          <ShareButton place={place} />
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.vicinity || place.formatted_address || place.name || '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Navigation className="w-3 h-3 mr-1" />
+                            Directions
+                          </a>
+                        </div>
                       </div>
 
                       {/* Trip Info Section */}
@@ -358,6 +368,11 @@ function App() {
           </div>
         </div>
       </div>
+      <PlaceDetailsPopup
+        placeId={selectedPlaceId}
+        isOpen={!!selectedPlaceId}
+        onClose={() => setSelectedPlaceId(null)}
+      />
     </APIProvider>
   );
 }
